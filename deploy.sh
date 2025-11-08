@@ -49,6 +49,8 @@ headscale {
     host.hostname = headscale.localdomain;
     exec.start = "/bin/sh /etc/rc";
     exec.stop  = "/bin/sh /etc/rc.shutdown";
+    exec.clean;
+    mount.devfs;
     persist;
 }
 EOF
