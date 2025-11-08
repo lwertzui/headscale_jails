@@ -65,6 +65,7 @@ chmod +x $JAILDIR/headscale/usr/bin/headscale
 
 #add user with pw
 pw useradd headscale \
+  -R  $JAILDIR/headscale/ \
   -d /var/lib/headscale \
   -s /usr/sbin/nologin \
   -c "Headscale system user" \
