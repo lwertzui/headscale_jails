@@ -27,6 +27,7 @@ export BSDINSTALL_DISTSITE="https://download.freebsd.org/ftp/releases/amd64/${RE
 
 if ! [-d "/usr/freebsd-dist"]; then
 	mkdir -p '/usr/freebsd-dist'
+fi
 # Fetch and extract base sets (non-interactive)
 bsdinstall distfetch
 bsdinstall distextract
