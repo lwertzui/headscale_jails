@@ -1,16 +1,15 @@
 #!/bin/sh
 
 HSVER=$(curl -sI https://github.com/juanfont/headscale/releases/latest \
-  | grep -i '^location:' \
-  | awk -F/ '{print $NF}' \
-  | tr -d '\rv')
+	| grep -i '^location:' \
+	| awk -F/ '{print $NF}' \
+	| tr -d '\rv')
 
 JAILDIR="/usr/jails"
 
-# Must run as root
 if [ "$(id -u)" -ne 0 ]; then
-    echo "You must be root to do this." >&2
-    exit 100
+	echo "You must be root to do this." >&2
+	exit 100
 fi
 
 echo "Creating jail directory at: $JAILDIR/headscale"
@@ -26,41 +25,43 @@ export DISTRIBUTIONS="base.txz"
 REL="$(freebsd-version | cut -d- -f1)"
 export BSDINSTALL_DISTSITE="https://download.freebsd.org/ftp/releases/amd64/${REL}-RELEASE"
 
+if ! [-d "/usr/freebsd-dist"]
+	mkdir -p '/usr/freebsd-dist'
 # Fetch and extract base sets (non-interactive)
 bsdinstall distfetch
 bsdinstall distextract
 
 # === Enable jails in rc.conf if not already ===
 if ! grep -q '^jail_enable="YES"' /etc/rc.conf; then
-    echo 'enabling jails'
-    echo 'jail_enable="YES"' >> /etc/rc.conf
+	echo 'enabling jails'
+	echo 'jail_enable="YES"' >> /etc/rc.conf
 fi
 
 if ! grep -q '^jail_parallel_start="YES"' /etc/rc.conf; then
-    echo 'enabling jail_parallel_start'
-    echo 'jail_parallel_start="YES"' >> /etc/rc.conf
+	echo 'enabling jail_parallel_start'
+	echo 'jail_parallel_start="YES"' >> /etc/rc.conf
 fi
 
 if ! grep -q '^\s*headscale\s*{' /etc/jail.conf; then
-    echo "adding jail 'headscale' to /etc/jail.conf"
-    cat <<'EOF' >> /etc/jail.conf
+	echo "adding jail 'headscale' to /etc/jail.conf"
+	cat <<'EOF' >> /etc/jail.conf
 headscale {
-    path = /usr/jails/headscale;
-    exec.start = "/bin/sh /etc/rc";
-    exec.stop  = "/bin/sh /etc/rc.shutdown";
-    exec.clean;
-    mount.devfs;
-    persist;
-    
-    #networking
-    host.hostname = headscale.localdomain;
-    interface = vtnet0;
-    ip4.addr = 172.17.254.156/24;
-    allow.raw_sockets;
+	path = /usr/jails/headscale;
+	exec.start = "/bin/sh /etc/rc";
+	exec.stop  = "/bin/sh /etc/rc.shutdown";
+	exec.clean;
+	mount.devfs;
+	persist:
+
+	#networking
+	host.hostname = headscale.localdomain;
+	interface = vtnet0;
+	ip4.addr = 172.17.254.156/24;
+	allow.raw_sockets;
 }
 EOF
 else
-    echo "Jail 'headscale' already exists in /etc/jail.conf"
+	echo "Jail 'headscale' already exists in /etc/jail.conf"
 fi
 
 echo "Base jail installed successfully at: $JAILDIR/headscale"
@@ -77,11 +78,11 @@ chmod +x $JAILDIR/headscale/usr/bin/headscale
 
 #add user with pw
 pw useradd headscale \
-  -R  $JAILDIR/headscale/ \
-  -d /var/lib/headscale \
-  -s /usr/sbin/nologin \
-  -c "Headscale system user" \
-  -g nogroup \
-  -m
+	-R  $JAILDIR/headscale/ \
+	-d /var/lib/headscale \
+	-s /usr/sbin/nologin \
+	-c "Headscale system user" \
+	-g nogroup \
+	-m
 
 mkdir -p $JAILDIR/headscale/etc/headscale
